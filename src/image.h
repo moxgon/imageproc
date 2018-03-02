@@ -23,4 +23,6 @@ namespace image {
     };
 
     void invert(const std::string& in_path, const std::string& out_path);
+
+    void hist_equalize(const std::string& in_path, const std::string& out_path);
 }
