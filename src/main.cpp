@@ -4,8 +4,7 @@
 #include "image.h"
 
 int main (int argc, char **argv) {
-    std::string imgpath = argv[1];
-    image::gs_image img(imgpath);
-
-    std::cout << img.get_pixel(0, 0) << std::endl;
+    std::string inpath = argv[1];
+    std::string outpath = argv[2];
+    image::invert(inpath, outpath);
 }   
