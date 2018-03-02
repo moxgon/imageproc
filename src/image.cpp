@@ -1,4 +1,5 @@
 #include "image.h"
+#include <algorithm>
 
 namespace image {  
     gs_image::gs_image(std::string in_path)
@@ -48,15 +49,14 @@ namespace image {
 
     std::vector<int> generate_histogram(const std::string& in_path) {
         gs_image img(in_path);
-        std::vector<int> hist (255, 0);
+        std::vector<int> hist (256, 0);
 
         for (int y = 0; y < img.get_height(); y++) {
             for (int x = 0; x < img.get_width(); x++) {
                 auto intensity = img.get_pixel(x, y);
-                hist.at(intensity)++;
+                hist[intensity]++;
             }
         }
-
         return hist;
     }
 
@@ -66,23 +66,25 @@ namespace image {
         for (int y = 0; y < img.get_height(); y++) {
             for (int x = 0; x < img.get_width(); x++) {
                 auto intensity = img.get_pixel(x, y);
-                img.set_pixel(x, y, mapping.at(intensity));
+                img.set_pixel(x, y, mapping[intensity]);
             }
         }
 
         img.save(out_path);
     }
 
-    
     void hist_equalize(const std::string& in_path, const std::string& out_path) {
+        gs_image img(in_path);
         auto h = generate_histogram(in_path);
-        std::vector<int> equalized (255, 0);
-
+        std::vector<int> equalized;
+        
         int sum = 0;
-        for (const auto& i: h) {
+        for (const auto i: h) {
             sum += i;
-            equalized.push_back(sum);
+            int intensity = (sum*255)/(img.get_width()*img.get_height());
+            equalized.push_back(intensity);
         }
+
         map_by(in_path, out_path, equalized);
     }
 

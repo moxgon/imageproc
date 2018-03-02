@@ -11,6 +11,6 @@ int main (int argc, char **argv) {
     if (command == "invert") {
         image::invert(inpath, outpath);
     } else if (command == "hist_equalize") {
-
+        image::hist_equalize(inpath, outpath);
     }
 }   
