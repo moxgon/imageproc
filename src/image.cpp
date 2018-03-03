@@ -1,30 +1,59 @@
 #include "image.h"
 #include <algorithm>
+#include <functional>
 
 namespace {
+    int apply_kernel(const image::gs_image& img, const std::vector<std::vector<int>>& kernel, uint x, uint y) {
+        float sum = 0;
+        for (uint row = 0; row < kernel.size(); row++) {
+            for (uint col = 0; col < kernel[row].size(); col++) {
+                sum += kernel[row][col] * img.get_pixel(x + col - 1, y + row - 1) / 4;
+            }
+        }
+        return sum;
+    }
 
-    std::vector<int> generate_histogram(const std::string& in_path) {
+    void process(const image::gs_image& img, std::function<void(uint,uint,uint)> func, uint start_x = 0, uint start_y = 0) {
+        // For each pixel
+        for (int y = start_y; y < img.get_height(); y++) {
+            for (int x = start_x; x < img.get_width(); x++) {
+               func(x, y, img.get_pixel(x, y)); // Apply function 
+            }
+        }
+    }
+    std::vector<uint> generate_histogram(const std::string& in_path) {
         image::gs_image img(in_path);
-        std::vector<int> hist (256, 0);
+        std::vector<uint> hist (256, 0);
 
-        for (int y = 0; y < img.get_height(); y++) {
+        /*for (int y = 0; y < img.get_height(); y++) {
             for (int x = 0; x < img.get_width(); x++) {
                 auto intensity = img.get_pixel(x, y);
                 hist[intensity]++;
             }
-        }
+        }*/
+
+        process(img, [&hist] (uint x, uint y, uint p) {
+            hist[p]++;
+        });
+
         return hist;
     }
 
-    void map_by(const std::string& in_path, const std::string& out_path, const std::vector<int>& mapping) {
+    void map_by(const std::string& in_path, const std::string& out_path, const std::vector<uint>& mapping) {
         image::gs_image img(in_path);
 
+        process(img, [&img,&mapping] (uint x, uint y, uint p) {
+            img.set_pixel(x, y, mapping[p]);
+        });
+
+        /*
         for (int y = 0; y < img.get_height(); y++) {
             for (int x = 0; x < img.get_width(); x++) {
                 auto intensity = img.get_pixel(x, y);
                 img.set_pixel(x, y, mapping[intensity]);
             }
         }
+        */
 
         img.save(out_path);
     }
@@ -40,11 +69,11 @@ namespace image {
 
     }
 
-    void gs_image::set_pixel(int x, int y, char i) {
+    void gs_image::set_pixel(uint x, uint y, char i) {
         m_image.set_pixel(x, y, i);
     }
 
-    int gs_image::get_pixel(int x, int y) const {
+    uint gs_image::get_pixel(uint x, uint y) const {
         return m_image.get_pixel(x, y);
     }
 
@@ -67,25 +96,31 @@ namespace image {
     void invert(const std::string& in_path, const std::string& out_path) {
         gs_image img(in_path);
 
+        process(img, [&img] (uint x, uint y, uint p) {
+            img.set_pixel(x, y, 255 - p);
+        });
+        /*
         for (int y = 0; y < img.get_height(); y++) {
             for (int x = 0; x < img.get_width(); x++) {
                 auto intensity = img.get_pixel(x, y);
                 img.set_pixel(x, y, 255 - intensity);
             }
-        }
+        }*/
 
         img.save(out_path);
     }
 
     void hist_equalize(const std::string& in_path, const std::string& out_path) {
         gs_image img(in_path);
+
         auto h = generate_histogram(in_path);
-        std::vector<int> equalized;
+
+        std::vector<uint> equalized;
         
-        int sum = 0;
+        uint sum = 0;
         for (const auto i: h) {
             sum += i;
-            int intensity = (sum*255)/(img.get_width()*img.get_height());
+            uint intensity = (sum * 255) / (img.get_width() * img.get_height());
             equalized.push_back(intensity);
         }
 
@@ -96,20 +131,12 @@ namespace image {
         gs_image img(in_path);
         gs_image out(in_path);
 
-        for (int y = 1; y < img.get_height() - 1; y++) {
-            int x; 
-            for (x = 1; x < img.get_width() - 1; x++) {
-                float sum = 0;
-                for (int row = 0; row < mask.size(); row++) {
-                    for (int col = 0; col < mask[row].size(); col++) {
-                        sum += mask[row][col] * img.get_pixel(x + col - 1, y + row - 1) / 4;
-                    }
-                }
-                std::cout << abs(sum) << std::endl;
+        process(img,
+            [&img, &out, &mask] (uint x, uint y, uint p) {
+                auto sum = apply_kernel(img, mask, x, y);
                 out.set_pixel(x, y, abs(sum));
-            }
-        }
-
+            }, 1, 1);
+        
         out.save(out_path);
     }
 

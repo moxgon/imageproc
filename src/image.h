@@ -9,8 +9,8 @@ namespace image {
         gs_image(const std::string& in_path);
         ~gs_image();
 
-        int get_pixel(int x, int y) const;
-        void set_pixel(int x, int y, char i);
+        uint get_pixel(uint x, uint y) const;
+        void set_pixel(uint x, uint y, char i);
         
         int get_height() const;
         int get_width() const;
