@@ -1,4 +1,4 @@
-EXE = process
+EXE = process.out
 CC = g++
 SDIR = src
 ODIR = obj
