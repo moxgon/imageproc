@@ -8,7 +8,7 @@ SRC = $(wildcard $(SDIR)/*.cpp)
 OBJ = $(SRC:$(SDIR)/%.cpp=$(ODIR)/%.o)
 
 CFLAGS += `libpng-config --cflags`
-CFLAGS += -Wall
+CFLAGS += -Wall -g
 
 LDFLAGS += `libpng-config --ldflags`
 

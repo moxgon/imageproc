@@ -6,7 +6,7 @@
 namespace image {
     class gs_image {
         public:
-        gs_image(std::string in_path);
+        gs_image(const std::string& in_path);
         ~gs_image();
 
         int get_pixel(int x, int y) const;
@@ -17,7 +17,8 @@ namespace image {
 
         png::image<png::gray_pixel>::pixbuf& get_buffer();
         
-        void save(std::string out_path);
+        void save(const std::string& out_path);
+
         private:
         png::image<png::gray_pixel> m_image;
     };
@@ -25,4 +26,6 @@ namespace image {
     void invert(const std::string& in_path, const std::string& out_path);
 
     void hist_equalize(const std::string& in_path, const std::string& out_path);
+
+    void convolve(const std::string& in_path, const std::string& out_path, const std::vector<std::vector<int>>& mask);
 }

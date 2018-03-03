@@ -12,5 +12,7 @@ int main (int argc, char **argv) {
         image::invert(inpath, outpath);
     } else if (command == "hist_equalize") {
         image::hist_equalize(inpath, outpath);
+    } else if (command == "convolve") {
+        image::convolve(inpath, outpath, {{1, 2, 1},{0, 0, 0},{-1, -2, -1}}); // Sobel y
     }
 }   
