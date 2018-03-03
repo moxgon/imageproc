@@ -22,10 +22,4 @@ namespace image {
         private:
         png::image<png::gray_pixel> m_image;
     };
-
-    void invert(const std::string& in_path, const std::string& out_path);
-
-    void hist_equalize(const std::string& in_path, const std::string& out_path);
-
-    void convolve(const std::string& in_path, const std::string& out_path, const std::vector<std::vector<int>>& mask);
 }

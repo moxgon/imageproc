@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "make",
             "program": "${workspaceFolder}/process",
-            "args": ["convolve","grayscale.png","bird_out.png"],
+            "args": ["con","bird.png","_bird.png"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
