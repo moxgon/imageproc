@@ -36,4 +36,5 @@
 *.app
 
 # Images
+res/
 *.png
