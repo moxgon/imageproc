@@ -94,22 +94,23 @@ namespace image {
 
     void convolve(const std::string& in_path, const std::string& out_path, const std::vector<std::vector<int>>& mask) {
         gs_image img(in_path);
+        gs_image out(in_path);
 
         for (int y = 1; y < img.get_height() - 1; y++) {
             int x; 
             for (x = 1; x < img.get_width() - 1; x++) {
-                int sum = 0;
+                float sum = 0;
                 for (int row = 0; row < mask.size(); row++) {
                     for (int col = 0; col < mask[row].size(); col++) {
-                        sum += mask[row][col] * img.get_pixel(x + col - 1, y + row - 1);
+                        sum += mask[row][col] * img.get_pixel(x + col - 1, y + row - 1) / 4;
                     }
                 }
                 std::cout << abs(sum) << std::endl;
-                img.set_pixel(x, y, abs(sum)/2);
+                out.set_pixel(x, y, abs(sum));
             }
         }
 
-        img.save(out_path);
+        out.save(out_path);
     }
 
 }
