@@ -3,14 +3,15 @@
 #include <algorithm>
 #include <functional>
 #include <cmath>
-
 #include "image.h"
 
 namespace image {
     template<class T> class baseimage;
+    using rgb_pix = png::rgb_pixel;
+    using gray_pix = png::gray_pixel;
 }
 
-namespace { 
+namespace image {
 
     const double pi = 3.14159265;
 
@@ -20,7 +21,7 @@ namespace {
         std::vector<T> neighbors;
         for (uint row = 0; row < size; row++) {
             for (uint col = 0; col < size; col++) {
-                neighbors.push_back(img.get_pixel_intensity(x + col - 1, y + row - 1));
+                neighbors.push_back(img.get_pixel(x + col - 1, y + row - 1));
             }
         }
         return neighbors;
@@ -32,7 +33,7 @@ namespace {
 
         for (uint row = 0; row < kernel.size(); row++) {
             for (uint col = 0; col < kernel[row].size(); col++) {
-                sum += kernel[row][col] * img.get_pixel_intensity(x + col - 1, y + row - 1);
+                sum += kernel[row][col] * img.get_pixel(x + col - 1, y + row - 1);
             }
         }
 
@@ -43,7 +44,7 @@ namespace {
     void process_no_edges(const image::baseimage<T>& img, std::function<void(uint,uint,T)> func) {
         for (int y = 1; y < img.get_height() - 1; y++) {
             for (int x = 1; x < img.get_width() - 1; x++) {
-               func(x, y, img.get_pixel_intensity(x, y)); // Apply function 
+               func(x, y, img.get_pixel(x, y)); // Apply function 
             }
         }
     }
@@ -53,7 +54,7 @@ namespace {
         // For each pixel
         for (int y = 0; y < img.get_height(); y++) {
             for (int x = 0; x < img.get_width(); x++) {
-               func(x, y, img.get_pixel_intensity(x, y)); // Apply function 
+               func(x, y, img.get_pixel(x, y)); // Apply function 
             }
         }
     }
@@ -63,32 +64,35 @@ namespace {
         image::baseimage<T> img(in_path);
         std::vector<uint> hist (256, 0);
 
-        process<T>(img, [&hist] (uint x, uint y, uint p) {
-            hist[p]++;
+        process<T>(img, [&img, &hist] (uint x, uint y, T p) {
+            hist[img.get_pixel(x,y)]++;
         });
 
         return hist;
     }
 
+    template<>
+    std::vector<uint> generate_histogram<rgb_pix>(const std::string& in_path);
+
     template<class T>
     void map_by(const std::string& in_path, const std::string& out_path, const std::vector<uint>& mapping) {
         image::baseimage<T> img(in_path);
 
-        process<T>(img, [&img,&mapping] (uint x, uint y, uint p) {
-            img.set_pixel(x, y, mapping[p]);
+        process<T>(img, [&img,&mapping] (uint x, uint y, T p) {
+            img.set_pixel(x, y, mapping[img.get_pixel(x,y)]);;
         });
 
         img.save(out_path);
     }
-}
 
-namespace image {
+    template<>
+    void map_by<rgb_pix>(const std::string& in_path, const std::string& out_path, const std::vector<uint>& mapping);
 
-        template<class T>
-        void invert(const std::string& in_path, const std::string& out_path) {
+    template<class T>
+    void invert(const std::string& in_path, const std::string& out_path) {
         baseimage<T> img(in_path);
 
-        process<T>(img, [&img] (uint x, uint y, uint p) {
+        process<T>(img, [&img] (uint x, uint y, T p) {
             img.set_pixel(x, y, 255 - p);
         });
 
@@ -106,8 +110,8 @@ namespace image {
         uint sum = 0;
         for (const auto i: h) {
             sum += i;
-            auto pixel = (sum * 255) / (img.get_width() * img.get_height());
-            equalized.push_back(pixel);
+            auto cumul = (sum * 255) / (img.get_width() * img.get_height());
+            equalized.push_back(cumul);
         }
 
         map_by<T>(in_path, out_path, equalized);
@@ -118,7 +122,7 @@ namespace image {
         baseimage<T> img(in_path);
         baseimage<T> out(in_path);
 
-        process_no_edges<T>(img, [&img, &out, &kernel, &divisor] (uint x, uint y, uint p) {
+        process_no_edges<T>(img, [&img, &out, &kernel, &divisor] (uint x, uint y, T p) {
             auto sum = apply_kernel(img, kernel, x, y);
             out.set_pixel(x, y, abs(sum)/divisor);
         });
@@ -131,7 +135,7 @@ namespace image {
         baseimage<T> img(in_path);
         baseimage<T> out(in_path);
 
-        process_no_edges<T>(img, [&img, &out] (uint x, uint y, uint p) {
+        process_no_edges<T>(img, [&img, &out] (uint x, uint y, T p) {
             auto v = get_neighbors(img, x, y, 3);
             size_t n = v.size() / 2;
             nth_element(v.begin(), v.begin()+n, v.end());
@@ -146,9 +150,9 @@ namespace image {
         baseimage<T> img(in_path);
         baseimage<T> out(in_path);
 
-        process_no_edges<T>(img, [&img, &out] (uint x, uint y, uint p) {
+        process_no_edges<T>(img, [&img, &out] (uint x, uint y, T p) {
             //auto sum = apply_kernel(img, {{-1, -1, -1},{-1, 8, -1},{-1, -1, -1}}, x, y);
-            //out.set_pixel(x, y, img.get_pixel(x, y) + abs(sum));
+            //out.set_pixel_intensity(x, y, img.get_pixel(x, y) + abs(sum));
         });
         
         out.save(out_path);
@@ -159,9 +163,9 @@ namespace image {
         baseimage<T> img(in_path);
         baseimage<T> out(in_path);
 
-        process_no_edges<T>(img, [&img, &out] (uint x, uint y, uint p) {
+        process_no_edges<T>(img, [&img, &out] (uint x, uint y, T p) {
             //auto sum = apply_kernel(img, {{-1, -1, -1},{-1, 4 + img.get_pixel(x, y), -1},{-1, -1, -1}}, x, y);
-            //out.set_pixel(x, y, abs(sum));
+            //out.set_pixel_intensity(x, y, abs(sum));
         });
         
         out.save(out_path);
@@ -172,7 +176,7 @@ namespace image {
         baseimage<T> img(in_path);
         baseimage<T> out(in_path);
 
-        process_no_edges<T>(img, [&img, &out] (uint x, uint y, uint p) { 
+        process_no_edges<T>(img, [&img, &out] (uint x, uint y, T p) { 
             auto sum_x = apply_kernel(img, {{-1, 0, 1},{-2, 0, 2},{-1, 0, 1}}, x, y)/4;
             auto sum_y = apply_kernel(img, {{-1, -2, -1},{0, 0, 0},{1, 2, 1}}, x, y)/4; 
             out.set_pixel(x, y, abs(sum_x) + abs(sum_y));

@@ -23,5 +23,7 @@ int main (int argc, char **argv) {
         image::highboost<image::gray_pix>(inpath, outpath);
     } else if (command == "sob") {
         image::sobel<image::gray_pix>(inpath, outpath);
+    } else if (command == "rgbeq") {
+        image::hist_equalize<image::rgb_pix>(inpath, outpath);
     }
 }   

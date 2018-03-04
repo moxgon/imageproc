@@ -5,16 +5,17 @@
 #include "proc.h"
 
 namespace image {
-    using gray_pix = png::gray_pixel;
     using rgb_pix = png::rgb_pixel;
+    using gray_pix = png::gray_pixel;
 
-    struct hsi {
+    struct hsi_pix {
         double hue;
         double saturation;
         double intensity;
     };
 
-    hsi rgb_to_hsi(rgb_pix rgb);
+    hsi_pix rgb_to_hsi(rgb_pix rgb);
+    rgb_pix hsi_to_rgb(hsi_pix hsi);
 
     template<class T>
     class baseimage {
@@ -29,8 +30,8 @@ namespace image {
             m_image.set_pixel(x, y, p);
         }
 
-        uint get_pixel_intensity(uint x, uint y) const {
-            return m_image.get_pixel(x, y);
+        T get_pixel(uint x, uint y) const {
+            return m_image.get_pixel(x,y);
         }
 
         void save(const std::string& out_path) {
@@ -53,30 +54,6 @@ namespace image {
         png::image<T> m_image;
     };
 
-    template<>
-    uint baseimage<png::rgb_pixel>::get_pixel_intensity(uint x, uint y) const {
-            return rgb_to_hsi(m_image.get_pixel(x,y)).intensity;
-    }
-
-    hsi rgb_to_hsi(rgb_pix rgb) {
-        // RGB vals normalized to [0 1]
-        double r = 255.0/rgb.red;
-        double g = 255.0/rgb.green; 
-        double b = 255.0/rgb.blue;
-
-        double top = 0.5 * ((r-g)+(r-b));
-        double bottom = sqrt(((r-g)*(r-g)+(r-b)*(g-b)));
-
-        auto hue = acos(top/bottom) * 180.0 / pi;
-        hue = b > g ? 360 - hue : hue;
-        hue /= 360;
-
-        auto intensity = (r + g + b) / 3;
-
-        auto saturation = 1 - (3 * std::min({r, g, b})/intensity);
-
-        return {hue, saturation, intensity};
-    }
 
     using gs_image = baseimage<png::gray_pixel>;
     using rgb_image = baseimage<rgb_pix>;
