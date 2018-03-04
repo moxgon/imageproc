@@ -10,18 +10,18 @@ int main (int argc, char **argv) {
     std::string outpath = argv[3];
 
     if (command == "inv") {
-        image::invert(inpath, outpath);
+        image::invert<image::gray_pix>(inpath, outpath);
     } else if (command == "heq") {
-        image::hist_equalize(inpath, outpath);
+        image::hist_equalize<image::gray_pix>(inpath, outpath);
     } else if (command == "ave") {
-        image::convolve(inpath, outpath, {{1, 1, 1},{1, 1, 1},{1, 1, 1}}, 9); 
+        image::convolve<image::gray_pix>(inpath, outpath, {{1, 1, 1},{1, 1, 1},{1, 1, 1}}, 9); 
     } else if (command == "med") {
-        image::median(inpath, outpath); 
+        image::median<image::gray_pix>(inpath, outpath); 
     } else if (command == "lap") {
-        image::laplacian(inpath, outpath);
+        image::laplacian<image::gray_pix>(inpath, outpath);
     } else if (command == "hib") {
-        image::highboost(inpath, outpath);
+        image::highboost<image::gray_pix>(inpath, outpath);
     } else if (command == "sob") {
-        image::sobel(inpath, outpath);
+        image::sobel<image::gray_pix>(inpath, outpath);
     }
 }   
