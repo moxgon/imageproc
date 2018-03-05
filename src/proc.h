@@ -6,12 +6,10 @@
 #include "image.h"
 
 namespace image {
+    // Forward declarations 
     template<class T> class baseimage;
     using rgb_pix = png::rgb_pixel;
     using gray_pix = png::gray_pixel;
-}
-
-namespace image {
 
     const double pi = 3.14159265;
 
@@ -30,13 +28,11 @@ namespace image {
     template<class T>
     int apply_kernel(const image::baseimage<T>& img, const std::vector<std::vector<int>>& kernel, uint x, uint y) {
         int sum = 0;
-
         for (uint row = 0; row < kernel.size(); row++) {
             for (uint col = 0; col < kernel[row].size(); col++) {
                 sum += kernel[row][col] * img.get_pixel(x + col - 1, y + row - 1);
             }
         }
-
         return sum;
     }
 
@@ -76,7 +72,7 @@ namespace image {
 
     template<class T>
     void map_by(const std::string& in_path, const std::string& out_path, const std::vector<uint>& mapping) {
-        image::baseimage<T> img(in_path);
+        image::baseimage<T> img(in_path); //TODO: Make this function take in image references, and leave the saving to generate_histogram
 
         process<T>(img, [&img,&mapping] (uint x, uint y, T p) {
             img.set_pixel(x, y, mapping[img.get_pixel(x,y)]);;
