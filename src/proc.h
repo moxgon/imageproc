@@ -147,8 +147,11 @@ namespace image {
         baseimage<T> out(in_path);
 
         process_no_edges<T>(img, [&img, &out] (uint x, uint y, T p) {
-            //auto sum = apply_kernel(img, {{-1, -1, -1},{-1, 8, -1},{-1, -1, -1}}, x, y);
-            //out.set_pixel_intensity(x, y, img.get_pixel(x, y) + abs(sum));
+            int sum = apply_kernel(img, {{-1, -1, -1},{-1, 8, -1},{-1, -1, -1}}, x, y);
+            int new_pix = img.get_pixel(x,y) + sum/8;
+            if (new_pix > 255) new_pix = 255;
+            else if (new_pix < 0) new_pix = 0;
+            out.set_pixel(x, y, new_pix);
         });
         
         out.save(out_path);
@@ -160,8 +163,9 @@ namespace image {
         baseimage<T> out(in_path);
 
         process_no_edges<T>(img, [&img, &out] (uint x, uint y, T p) {
-            //auto sum = apply_kernel(img, {{-1, -1, -1},{-1, 4 + img.get_pixel(x, y), -1},{-1, -1, -1}}, x, y);
-            //out.set_pixel_intensity(x, y, abs(sum));
+            int sum = apply_kernel(img, {{-1, -1, -1},{-1, 4 + img.get_pixel(x, y), -1},{-1, -1, -1}}, x, y);
+            if (abs(sum)> 255) sum = 255;
+            out.set_pixel(x, y, abs(sum));
         });
         
         out.save(out_path);

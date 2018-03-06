@@ -61,7 +61,7 @@ namespace image {
             hue = 0;
             saturation = 0;
         } else {
-            double w = 0.5 * ((r-g)+(r-b)) / sqrt((r-g)*(r-g)+(r-b)*(g-b));
+            double w = 0.5 * ((r-g) + (r-b)) / sqrt((r-g) * (r-g) + (r-b) * (g-b));
 
             if (w > 1) w = 1;
             if (w < -1) w = -1;
